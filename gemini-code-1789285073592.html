@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>동사 과거형 분리수거 & AI 타자 대결</title>
+  <!-- 손글씨 폰트: Gaegu & Nanum Pen Script -->
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Paper / Sketchbook Light Mode Palette */
+      --bg-color: #f7f3e9;
+      --app-bg: #fffefb;
+      --card-bg: #ffffff;
+      --text-color: #2c2c2c;
+      --sub-text: #666666;
+      --line-color: #2c2c2c;
+      --dock-bg: #fffdf5;
+      --modal-bg: #ffffff;
+      --box-inner-bg: #faf7ef;
+
+      /* Marker Pen Highlights */
+      --marker-pink: #ffb7b2;
+      --marker-yellow: #ffdac1;
+      --marker-blue: #e2f0cb;
+      --marker-green: #b5ead7;
+      --marker-purple: #c7ceea;
+
+      --wobbly-border: 3px solid var(--line-color);
+      --sketch-shadow: 4px 5px 0px var(--line-color);
+      --sketch-shadow-sm: 2px 3px 0px var(--line-color);
+      --wobbly-radius-1: 255px 15px 225px 15px/15px 225px 15px 255px;
+      --wobbly-radius-2: 15px 225px 15px 255px/255px 15px 225px 15px;
+    }
+
+    /* Chalkboard / Dark Paper Mode */
+    body.dark-mode {
+      --bg-color: #1a1a24;
+      --app-bg: #242432;
+      --card-bg: #2c2c3e;
+      --text-color: #f0f0f5;
+      --sub-text: #bbbbcc;
+      --line-color: #f0f0f5;
+      --dock-bg: #242432;
+      --modal-bg: #2c2c3e;
+      --box-inner-bg: #1e1e2a;
+
+      --marker-pink: #d85a7f;
+      --marker-yellow: #d4a359;
+      --marker-blue: #4a7c96;
+      --marker-green: #3d8b7a;
+      --marker-purple: #7a6ba6;
+
+      --sketch-shadow: 4px 5px 0px #000000;
+      --sketch-shadow-sm: 2px 3px 0px #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Gaegu', cursive, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease;
+      /* 종이 질감 모방 줄무늬 */
+      background-image: radial-gradient(var(--sub-text) 0.7px, transparent 0.7px);
+      background-size: 18px 18px;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 1050px;
+      background: var(--app-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      box-shadow: var(--sketch-shadow);
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--marker-pink);
+      color: var(--text-color);
+      padding: 18px 24px;
+      border-bottom: var(--wobbly-border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -1px;
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .geo-btn {
+      background: var(--marker-yellow);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      color: var(--text-color);
+      padding: 6px 14px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--sketch-shadow-sm);
+      transition: transform 0.1s ease;
+    }
+
+    .geo-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+    .teacher-nav {
+      background: var(--box-inner-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    main {
+      flex: 1;
+      padding: 24px;
+      padding-bottom: 95px;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      box-shadow: var(--sketch-shadow);
+      padding: 22px;
+      margin-bottom: 22px;
+      position: relative;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px;
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      background: var(--marker-pink);
+      color: var(--text-color);
+      font-size: 1.4rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--sketch-shadow);
+      transition: all 0.1s ease;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translate(3px, 3px); box-shadow: none; }
+
+    .btn:disabled {
+      background: #ccc !important;
+      color: #777 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn-retry {
+      background: #ff8b8b;
+      margin-top: 10px;
+    }
+
+    .mode-grid, .version-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .selectable-card {
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      background: var(--card-bg);
+      color: var(--text-color);
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 1.3rem;
+      box-shadow: var(--sketch-shadow-sm);
+      transition: all 0.15s ease;
+    }
+
+    .selectable-card.selected {
+      background: var(--marker-yellow);
+      transform: rotate(-1deg) scale(1.02);
+      box-shadow: var(--sketch-shadow);
+    }
+
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-size: 1.25rem; font-weight: 700; margin-bottom: 6px; }
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--box-inner-bg);
+      color: var(--text-color);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      font-size: 1.2rem;
+      outline: none;
+    }
+
+    .ganadi-box {
+      background: var(--marker-blue);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      box-shadow: var(--sketch-shadow);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ganadi-avatar {
+      width: 52px; height: 52px;
+      background: var(--marker-yellow);
+      border: var(--wobbly-border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .ganadi-speech { font-size: 1.3rem; line-weight: 700; line-height: 1.3; }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: var(--marker-purple);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      box-shadow: var(--sketch-shadow);
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .verb-deck { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .verb-card {
+      background: var(--card-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      padding: 8px 16px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--sketch-shadow-sm);
+      transition: all 0.15s ease;
+    }
+
+    .verb-card:hover { transform: rotate(1deg) scale(1.05); }
+
+    .verb-card.selected {
+      background: var(--marker-pink);
+      transform: rotate(-2deg) scale(1.08);
+      box-shadow: var(--sketch-shadow);
+    }
+
+    .verb-card.placed {
+      background: rgba(180, 180, 180, 0.3);
+      color: #888;
+      text-decoration: line-through;
+      box-shadow: none;
+      border-style: dashed;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .recycle-bins-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 850px) {
+      .recycle-bins-grid { grid-template-columns: repeat(1, 1fr); }
+    }
+
+    .bin-card {
+      background: var(--card-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      box-shadow: var(--sketch-shadow-sm);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      min-height: 180px;
+    }
+
+    .bin-card[data-binid="ed"] { background: #e8fad0; }
+    .bin-card[data-binid="d"] { background: #fff1c5; }
+    .bin-card[data-binid="ied"] { background: #ffd8e4; }
+    .bin-card[data-binid="double"] { background: #d6e8ff; }
+    .bin-card[data-binid="irregular"] { background: #e7ddff; }
+
+    body.dark-mode .bin-card[data-binid="ed"] { background: #2f4024; }
+    body.dark-mode .bin-card[data-binid="d"] { background: #4a3e20; }
+    body.dark-mode .bin-card[data-binid="ied"] { background: #4a2835; }
+    body.dark-mode .bin-card[data-binid="double"] { background: #213652; }
+    body.dark-mode .bin-card[data-binid="irregular"] { background: #352c4e; }
+
+    .bin-card.highlight {
+      transform: scale(1.03);
+      box-shadow: var(--sketch-shadow);
+      border-width: 4px;
+    }
+
+    .bin-header {
+      margin-bottom: 8px;
+      border-bottom: 2px dashed var(--line-color);
+      padding-bottom: 6px;
+    }
+
+    .bin-title { font-size: 1.2rem; font-weight: 700; display: block; }
+    .bin-badge { font-size: 0.95rem; color: var(--sub-text); }
+
+    .bin-items { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; align-content: flex-start; margin-top: 6px; }
+
+    .placed-item {
+      font-size: 1rem;
+      padding: 3px 8px;
+      background: var(--app-bg);
+      border: 1px solid var(--line-color);
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .boss-screen {
+      background: var(--card-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      box-shadow: var(--sketch-shadow);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .boss-avatar-box {
+      width: 80px; height: 80px;
+      background: var(--marker-pink);
+      border: var(--wobbly-border);
+      border-radius: 50%;
+      margin: 0 auto 12px auto;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+    }
+
+    .race-track {
+      background: var(--box-inner-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      padding: 16px;
+      margin: 16px 0;
+      text-align: left;
+    }
+
+    .progress-bar-bg {
+      background: var(--card-bg);
+      border: 2px solid var(--line-color);
+      height: 22px;
+      border-radius: 12px;
+      margin-top: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--marker-pink);
+      width: 0%;
+      transition: width 0.2s ease-out;
+    }
+
+    .bottom-dock {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: var(--dock-bg);
+      border-top: var(--wobbly-border);
+      display: flex;
+      padding: 12px 20px;
+      gap: 12px;
+      z-index: 90;
+    }
+
+    .dock-btn {
+      flex: 1;
+      padding: 12px;
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      background: var(--marker-yellow);
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--sketch-shadow-sm);
+    }
+
+    .dock-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+    .dock-btn:disabled { background: #ccc !important; color: #777 !important; cursor: not-allowed !important; box-shadow: none !important; }
+
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+    .modal-card {
+      background: var(--modal-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      box-shadow: var(--sketch-shadow);
+      width: 100%;
+      max-width: 440px;
+      padding: 24px;
+    }
+
+    .certificate-card {
+      background: var(--card-bg);
+      border: 4px solid var(--line-color);
+      border-radius: var(--wobbly-radius-1);
+      box-shadow: var(--sketch-shadow);
+      padding: 28px 22px;
+      text-align: center;
+      position: relative;
+    }
+
+    .cert-title { font-size: 2.2rem; font-weight: 700; color: var(--text-color); margin-bottom: 2px; }
+    .cert-subtitle { font-size: 1.1rem; color: var(--sub-text); letter-spacing: 1px; margin-bottom: 14px; }
+    .cert-message {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-color);
+      background: var(--marker-yellow);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      padding: 12px;
+      margin: 14px 0;
+      transform: rotate(-1deg);
+    }
+    .cert-name {
+      font-size: 1.4rem; font-weight: 700;
+      background: var(--marker-pink);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      padding: 8px; margin-bottom: 12px;
+    }
+    .cert-stats {
+      font-size: 1.25rem; line-height: 1.6; text-align: left;
+      background: var(--box-inner-bg);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      padding: 12px 16px; margin: 12px 0;
+    }
+
+    /* 대형 안내사항 박스 */
+    .notice-box-large {
+      background: var(--marker-yellow);
+      border: 4px solid var(--line-color);
+      border-radius: var(--wobbly-radius-1);
+      color: var(--text-color);
+      padding: 20px 16px;
+      margin-top: 20px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      box-shadow: var(--sketch-shadow);
+      line-height: 1.4;
+      transform: rotate(1deg);
+    }
+
+    .toast {
+      position: absolute;
+      top: 80px; left: 50%; transform: translateX(-50%) translateY(-10px);
+      background: var(--line-color);
+      color: var(--app-bg);
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      z-index: 300;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.2s ease;
+      text-align: center;
+      box-shadow: var(--sketch-shadow-sm);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .options-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .option-btn {
+      padding: 12px 16px;
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-2);
+      background: var(--card-bg);
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: var(--sketch-shadow-sm);
+    }
+    .option-btn.correct { background: var(--marker-green); }
+    .option-btn.wrong { background: var(--marker-pink); }
+
+    .notice-banner {
+      background: var(--marker-green);
+      border: var(--wobbly-border);
+      border-radius: var(--wobbly-radius-1);
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 10px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="header-top">
+      <h1>✏️ 동사 과거형 분리수거 대작전</h1>
+      <div class="header-btns">
+        <button class="geo-btn" id="theme-btn">🌙 다크모드</button>
+        <button class="geo-btn" id="reset-storage-btn">🗑️ 새로고침</button>
+        <button class="geo-btn" id="teacher-btn">🔒 교사모드</button>
+      </div>
+    </div>
+    <div class="teacher-nav" id="teacher-nav" style="display: none;">
+      <button class="geo-btn" id="stage-prev">◀ 이전</button>
+      <span id="stage-label">단계: COVER</span>
+      <button class="geo-btn" id="stage-next">다음 ▶</button>
+    </div>
+  </header>
+
+  <main id="main-content"></main>
+
+  <div class="bottom-dock" id="bottom-dock" style="display: none;">
+    <button class="dock-btn" id="dock-hint">💡 힌트 찬스</button>
+    <button class="dock-btn" id="dock-toc">📋 진행 현황</button>
+    <button class="dock-btn" id="dock-next" disabled>다음 단계 ➡️</button>
+  </div>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-card" id="modal-card"></div>
+  </div>
+
+  <div class="toast" id="toast">메시지</div>
+</div>
+
+<script>
+const LOCAL_STORAGE_KEY = 'past_tense_game_data_v2';
+
+const VERBS_DB = [
+  { id: 'v1', base: 'watch', past: 'watched', cat: 'ed', meaning: '보다' },
+  { id: 'v2', base: 'talk', past: 'talked', cat: 'ed', meaning: '말하다' },
+  { id: 'v3', base: 'start', past: 'started', cat: 'ed', meaning: '시작하다' },
+  { id: 'v4', base: 'jump', past: 'jumped', cat: 'ed', meaning: '뛰다' },
+  { id: 'v5', base: 'want', past: 'wanted', cat: 'ed', meaning: '원하다' },
+  { id: 'v6', base: 'live', past: 'lived', cat: 'd', meaning: '살다' },
+  { id: 'v7', base: 'like', past: 'liked', cat: 'd', meaning: '좋아하다' },
+  { id: 'v8', base: 'move', past: 'moved', cat: 'd', meaning: '움직이다' },
+  { id: 'v9', base: 'dance', past: 'danced', cat: 'd', meaning: '춤추다' },
+  { id: 'v10', base: 'create', past: 'created', cat: 'd', meaning: '만들다' },
+  { id: 'v11', base: 'study', past: 'studied', cat: 'ied', meaning: '공부하다' },
+  { id: 'v12', base: 'worry', past: 'worried', cat: 'ied', meaning: '걱정하다' },
+  { id: 'v13', base: 'cry', past: 'cried', cat: 'ied', meaning: '울다' },
+  { id: 'v14', base: 'try', past: 'tried', cat: 'ied', meaning: '시도하다' },
+  { id: 'v15', base: 'carry', past: 'carried', cat: 'ied', meaning: '나르다' },
+  { id: 'v16', base: 'stop', past: 'stopped', cat: 'double', meaning: '멈추다' },
+  { id: 'v17', base: 'plan', past: 'planned', cat: 'double', meaning: '계획하다' },
+  { id: 'v18', base: 'jog', past: 'jogged', cat: 'double', meaning: '조깅하다' },
+  { id: 'v19', base: 'shop', past: 'shopped', cat: 'double', meaning: '쇼핑하다' },
+  { id: 'v20', base: 'drop', past: 'dropped', cat: 'double', meaning: '떨어뜨리다' },
+  { id: 'v21', base: 'have', past: 'had', cat: 'irregular', meaning: '가지다' },
+  { id: 'v22', base: 'go', past: 'went', cat: 'irregular', meaning: '가다' },
+  { id: 'v23', base: 'do', past: 'did', cat: 'irregular', meaning: '하다' },
+  { id: 'v24', base: 'make', past: 'made', cat: 'irregular', meaning: '만들다' },
+  { id: 'v25', base: 'buy', past: 'bought', cat: 'irregular', meaning: '사다' }
+];
+
+const BINS_DB = [
+  { id: 'ed', name: '🌿 -ed 박스', desc: '일반 동사' },
+  { id: 'd', name: '🌼 -d 박스', desc: 'e로 끝나는 동사' },
+  { id: 'ied', name: '🌸 y→ied 박스', desc: '자음 + y 동사' },
+  { id: 'double', name: '💧 자음 한 번 더+ed', desc: '단모음 + 단자음' },
+  { id: 'irregular', name: '🔮 불규칙 박스', desc: '불규칙 변형 동사' }
+];
+
+const QUIZ_DB = [
+  { sentence: 'Yesterday, I [watch] a movie with my friend.', target: 'watch', answer: 'watched', options: ['watched', 'watchd', 'watchied', 'stopping'] },
+  { sentence: 'She [study] English very hard last night.', target: 'study', answer: 'studied', options: ['studyed', 'studied', 'studyied', 'studyd'] },
+  { sentence: 'We [stop] at the red light.', target: 'stop', answer: 'stopped', options: ['stoped', 'stopped', 'stopd', 'stopied'] },
+  { sentence: 'They [go] to the park last Sunday.', target: 'go', answer: 'went', options: ['goed', 'god', 'went', 'gone'] },
+  { sentence: 'He [like] the pizza very much.', target: 'like', answer: 'liked', options: ['liked', 'likeed', 'likied', 'likd'] },
+  { sentence: 'Minji [talk] with her mother yesterday.', target: 'talk', answer: 'talked', options: ['talked', 'talkd', 'talkied', 'talkes'] },
+  { sentence: 'The game [start] an hour ago.', target: 'start', answer: 'started', options: ['started', 'startd', 'startied', 'starten'] },
+  { sentence: 'The cat [jump] over the box.', target: 'jump', answer: 'jumped', options: ['jumped', 'jumpd', 'jumpied', 'jumpt'] },
+  { sentence: 'I [want] a new bicycle for my birthday.', target: 'want', answer: 'wanted', options: ['wanted', 'wantd', 'wantied', 'wanten'] },
+  { sentence: 'We [live] in Seoul three years ago.', target: 'live', answer: 'lived', options: ['lived', 'liveed', 'livied', 'livd'] },
+  { sentence: 'My family [move] to a new town.', target: 'move', answer: 'moved', options: ['moved', 'moveed', 'movied', 'movd'] },
+  { sentence: 'They [dance] together at the party.', target: 'dance', answer: 'danced', options: ['danced', 'danceed', 'dancied', 'dancd'] },
+  { sentence: 'Artists [create] beautiful sculptures.', target: 'create', answer: 'created', options: ['created', 'createed', 'creatied', 'creatd'] },
+  { sentence: 'Mom [worry] about my fever.', target: 'worry', answer: 'worried', options: ['worried', 'worryed', 'worryied', 'worryd'] },
+  { sentence: 'The baby [cry] out loud last night.', target: 'cry', answer: 'cried', options: ['cried', 'cryed', 'cryied', 'cryd'] },
+  { sentence: 'He [try] his best to pass the test.', target: 'try', answer: 'tried', options: ['tried', 'tryed', 'tryied', 'tryd'] },
+  { sentence: 'She [carry] heavy bags to her room.', target: 'carry', answer: 'carried', options: ['carried', 'carryed', 'carryied', 'carryd'] },
+  { sentence: 'We [plan] a summer vacation trip.', target: 'plan', answer: 'planned', options: ['planned', 'planed', 'planied', 'pland'] },
+  { sentence: 'He [jog] in the park this morning.', target: 'jog', answer: 'jogged', options: ['jogged', 'joged', 'jogied', 'jogd'] },
+  { sentence: 'I [shop] for clothes at the mall.', target: 'shop', answer: 'shopped', options: ['shopped', 'shoped', 'shopied', 'shopd'] },
+  { sentence: 'He [drop] the glass on the floor.', target: 'drop', answer: 'dropped', options: ['dropped', 'droped', 'dropied', 'dropd'] },
+  { sentence: 'We [have] a great time together.', target: 'have', answer: 'had', options: ['had', 'haved', 'havd', 'hatted'] }
+];
+
+const STAGES = ['cover', 'sorting', 'quiz', 'boss', 'result'];
+
+const state = {
+  mode: null,
+  version: null,
+  players: [],
+  currentStage: 'cover',
+  teacherMode: false,
+  darkMode: false,
+  hintChances: 6,
+  stampsCount: 1,
+  tabSwitches: 0,
+  startTime: null,
+  endTime: null,
+  hearts: 10,
+  maxHearts: 10,
+  selectedVerbId: null,
+  shuffledVerbs: [],
+  placedMap: {},
+  quizAnswers: [],
+  quizIndex: 0,
+  bossVerbs: [],
+  bossPlayerIndex: 0,
+  bossAiProgress: 0,
+  bossWinner: null,
+  bossTimer: null,
+  bossCpm: 20
+};
+
+/* LocalStorage 저장 및 로드 기능 */
+function saveToLocalStorage() {
+  const dataToSave = {
+    mode: state.mode,
+    version: state.version,
+    players: state.players,
+    currentStage: state.currentStage,
+    darkMode: state.darkMode,
+    hintChances: state.hintChances,
+    stampsCount: state.stampsCount,
+    tabSwitches: state.tabSwitches,
+    startTime: state.startTime,
+    endTime: state.endTime,
+    hearts: state.hearts,
+    shuffledVerbs: state.shuffledVerbs,
+    placedMap: state.placedMap,
+    quizAnswers: state.quizAnswers,
+    quizIndex: state.quizIndex,
+    bossCpm: state.bossCpm
+  };
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+}
+
+function loadFromLocalStorage() {
+  const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      Object.assign(state, parsed);
+      if (state.darkMode) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('theme-btn').textContent = '☀️ 라이트모드';
+      }
+    } catch (e) {
+      console.error('LocalStorage load failed:', e);
+    }
+  }
+}
+
+function clearLocalStorage() {
+  localStorage.removeItem(LOCAL_STORAGE_KEY);
+  showToast('🧹 저장된 학습 데이터가 초기화되었습니다.');
+  resetAll();
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+function openModal(htmlContent) {
+  document.getElementById('modal-card').innerHTML = htmlContent;
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+}
+
+function resetCurrentStage() {
+  closeModal();
+  if (state.currentStage === 'sorting') {
+    state.hearts = state.maxHearts;
+    state.placedMap = {};
+    state.selectedVerbId = null;
+    state.shuffledVerbs = [...VERBS_DB].sort(() => Math.random() - 0.5);
+    showToast('🔄 분리수거 단계를 처음부터 다시 시작합니다!');
+  } else if (state.currentStage === 'quiz') {
+    state.quizIndex = 0;
+    state.quizAnswers = [];
+    showToast('🔄 복습 퀴즈 단계를 처음부터 다시 시작합니다!');
+  } else if (state.currentStage === 'boss') {
+    initBossBattle();
+    showToast('🔄 AI 타자 대결을 처음부터 다시 시작합니다!');
+  }
+  saveToLocalStorage();
+  render();
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && state.currentStage !== 'cover' && state.currentStage !== 'result') {
+    state.tabSwitches++;
+    saveToLocalStorage();
+    showToast(`⚠️ 딴짓 감지! (누적 ${state.tabSwitches}회)`);
+  }
+});
+
+document.getElementById('theme-btn').addEventListener('click', () => {
+  state.darkMode = !state.darkMode;
+  if (state.darkMode) {
+    document.body.classList.add('dark-mode');
+    document.getElementById('theme-btn').textContent = '☀️ 라이트모드';
+  } else {
+    document.body.classList.remove('dark-mode');
+    document.getElementById('theme-btn').textContent = '🌙 다크모드';
+  }
+  saveToLocalStorage();
+});
+
+document.getElementById('reset-storage-btn').addEventListener('click', () => {
+  if (confirm('학습 기록을 모두 지우고 처음으로 돌아가시겠습니까?')) {
+    clearLocalStorage();
+  }
+});
+
+function render() {
+  const main = document.getElementById('main-content');
+  const dock = document.getElementById('bottom-dock');
+  const teacherBtn = document.getElementById('teacher-btn');
+  const teacherNav = document.getElementById('teacher-nav');
+  const stageLabel = document.getElementById('stage-label');
+
+  teacherBtn.textContent = state.teacherMode ? '🔓 교사모드' : '🔒 교사모드';
+  teacherNav.style.display = state.teacherMode ? 'flex' : 'none';
+  if (stageLabel) stageLabel.textContent = `단계: ${state.currentStage.toUpperCase()}`;
+
+  if (state.currentStage === 'cover') {
+    dock.style.display = 'none';
+    renderCover(main);
+  } else if (state.currentStage === 'sorting') {
+    dock.style.display = 'flex';
+    renderSorting(main);
+  } else if (state.currentStage === 'quiz') {
+    dock.style.display = 'none';
+    renderQuiz(main);
+  } else if (state.currentStage === 'boss') {
+    dock.style.display = 'none';
+    renderBoss(main);
+  } else if (state.currentStage === 'result') {
+    dock.style.display = 'none';
+    renderResult(main);
+  }
+}
+
+/* 1. 표지 화면 */
+function renderCover(container) {
+  container.innerHTML = `
+    <div class="card">
+      <div class="card-title">1. 모드 선택하기</div>
+      <div class="mode-grid">
+        <div class="selectable-card ${state.mode === 'solo' ? 'selected' : ''}" data-action="select-mode" data-value="solo">
+          🧍 솔로 모드
+        </div>
+        <div class="selectable-card ${state.mode === 'pair' ? 'selected' : ''}" data-action="select-mode" data-value="pair">
+          🧑‍🤝‍🧑 짝꿍 모드
+        </div>
+      </div>
+
+      ${state.mode ? `
+        <div class="card-title" style="margin-top: 18px;">2. 학생 정보 입력</div>
+        <div class="input-group">
+          <label>${state.mode === 'pair' ? '학생 1 학번/이름' : '학번 및 이름'}</label>
+          <input type="text" id="p1-info" placeholder="예: 10101 홍길동" value="${state.players[0] || ''}">
+        </div>
+        ${state.mode === 'pair' ? `
+          <div class="input-group">
+            <label>학생 2 학번/이름</label>
+            <input type="text" id="p2-info" placeholder="예: 10102 성춘향" value="${state.players[1] || ''}">
+          </div>
+        ` : ''}
+
+        <div class="card-title" style="margin-top: 18px;">3. 난이도 레벨 선택</div>
+        <div class="version-grid">
+          <div class="selectable-card ${state.version === 'A' ? 'selected' : ''}" data-action="select-version" data-value="A">
+            <div><b>A 레벨</b></div>
+            <div style="font-size:1.1rem; margin-top:4px;">
+              힌트 6회 / AI속도 20타<br><b style="color:#d85a7f;">💮 완료 도장 1개</b>
+            </div>
+          </div>
+          <div class="selectable-card ${state.version === 'S' ? 'selected' : ''}" data-action="select-version" data-value="S">
+            <div><b>S 레벨</b></div>
+            <div style="font-size:1.1rem; margin-top:4px;">
+              힌트 3회 / AI속도 50타<br><b style="color:#d85a7f;">💮💮 완료 도장 2개</b>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="ganadi-box">
+      <div class="ganadi-avatar">🐶</div>
+      <div class="ganadi-speech">
+        "안녕! 과거형 동사 25개를 알맞은 규칙 박스에 모두 분리수거해야만 다음 단계로 넘어갈 수 있어! 힘내자!"
+      </div>
+    </div>
+
+    <button class="btn" id="start-btn" ${!state.mode || !state.version ? 'disabled' : ''}>🚀 즐거운 학습 시작하기</button>
+  `;
+
+  container.querySelectorAll('[data-action="select-mode"]').forEach(el => {
+    el.addEventListener('click', () => {
+      state.mode = el.dataset.value;
+      state.players = [];
+      saveToLocalStorage();
+      render();
+    });
+  });
+
+  container.querySelectorAll('[data-action="select-version"]').forEach(el => {
+    el.addEventListener('click', () => {
+      state.version = el.dataset.value;
+      state.hintChances = state.version === 'A' ? 6 : 3;
+      state.bossCpm = state.version === 'A' ? 20 : 50;
+      state.stampsCount = state.version === 'A' ? 1 : 2;
+      saveToLocalStorage();
+      render();
+    });
+  });
+
+  const startBtn = document.getElementById('start-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      const p1 = document.getElementById('p1-info')?.value.trim();
+      const p2 = document.getElementById('p2-info')?.value.trim();
+      if (!p1 || (state.mode === 'pair' && !p2)) { showToast('학번과 이름을 입력해주세요!'); return; }
+      state.players = state.mode === 'pair' ? [p1, p2] : [p1];
+      state.startTime = state.startTime || new Date();
+      state.hearts = state.hearts || state.maxHearts;
+      if (state.shuffledVerbs.length === 0) {
+        state.shuffledVerbs = [...VERBS_DB].sort(() => Math.random() - 0.5);
+      }
+      state.currentStage = 'sorting';
+      saveToLocalStorage();
+      render();
+    });
+  }
+}
+
+/* 2. 동사 과거형 분리수거 화면 */
+function renderSorting(container) {
+  const totalCount = VERBS_DB.length;
+  const placedCount = Object.keys(state.placedMap).length;
+  const isGameOver = state.hearts <= 0;
+  const isStageCompleted = placedCount === totalCount && !isGameOver;
+
+  let cardsHtml = state.shuffledVerbs.map(v => {
+    const isPlaced = !!state.placedMap[v.id];
+    const isSelected = state.selectedVerbId === v.id;
+    return `<div class="verb-card ${isPlaced ? 'placed' : ''} ${isSelected ? 'selected' : ''}" data-vid="${v.id}">
+      ${v.base}
+    </div>`;
+  }).join('');
+
+  let binsHtml = BINS_DB.map(bin => {
+    const itemsInBin = Object.entries(state.placedMap)
+      .filter(([_, data]) => data.binId === bin.id)
+      .map(([vId, data]) => {
+        const verb = VERBS_DB.find(v => v.id === vId);
+        return `<span class="placed-item">${verb.base}→${data.typedPast}</span>`;
+      }).join('');
+
+    return `
+      <div class="bin-card ${state.selectedVerbId && !isGameOver ? 'highlight' : ''}" data-binid="${bin.id}">
+        <div class="bin-header">
+          <span class="bin-title">${bin.name}</span>
+          <span class="bin-badge">${bin.desc}</span>
+        </div>
+        <div class="bin-items">${itemsInBin || '<span style="font-size:0.95rem; color:#888;">카드 선택 후 클릭</span>'}</div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="status-bar">
+      <span>❤️ HP: ${state.hearts}/${state.maxHearts}</span>
+      <span>💡 힌트: ${state.hintChances}회</span>
+      <span>🎈 진행률: ${placedCount}/${totalCount}</span>
+    </div>
+
+    ${isStageCompleted ? `
+      <div class="notice-banner">
+        🎉 25개 동사 분리수거 완전 성공! 하단의 [다음 단계 ➡️] 버튼을 클릭하세요!
+      </div>
+    ` : ''}
+
+    ${isGameOver ? `
+      <div class="card" style="border: 3px solid #ff5252; text-align:center;">
+        <div style="font-size:1.4rem; color:#ff5252; margin-bottom:8px; font-weight:700;">💥 GAME OVER (목숨 소진)</div>
+        <p style="font-size:1.1rem; margin-bottom:12px;">목숨을 모두 잃었습니다. 분리수거 단계를 처음부터 다시 도전하세요!</p>
+        <button class="btn btn-retry" id="retry-btn">🔄 이 단계 처음부터 재도전하기</button>
+      </div>
+    ` : ''}
+
+    <div class="card">
+      <div class="card-title">📦 동사 카드 시트 (단어를 선택해 분리수거함에 넣어주세요)</div>
+      <div class="verb-deck">${cardsHtml}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🗑️ past-tense 분리수거함</div>
+      <div class="recycle-bins-grid">${binsHtml}</div>
+    </div>
+  `;
+
+  if (isGameOver) {
+    document.getElementById('retry-btn')?.addEventListener('click', resetCurrentStage);
+  } else {
+    container.querySelectorAll('.verb-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const vId = card.dataset.vid;
+        if (state.placedMap[vId]) return;
+        state.selectedVerbId = state.selectedVerbId === vId ? null : vId;
+        render();
+      });
+    });
+
+    container.querySelectorAll('.bin-card').forEach(bin => {
+      bin.addEventListener('click', () => {
+        if (!state.selectedVerbId) {
+          showToast('먼저 분리수거할 동사 카드를 선택하세요!');
+          return;
+        }
+        openClassifyModal(state.selectedVerbId, bin.dataset.binid);
+      });
+    });
+  }
+
+  const nextBtn = document.getElementById('dock-next');
+  if (nextBtn) {
+    const isUnlocked = state.teacherMode || isStageCompleted;
+    nextBtn.disabled = !isUnlocked;
+  }
+}
+
+/* 과거형 검증 모달 */
+function openClassifyModal(verbId, targetBinId) {
+  const verb = VERBS_DB.find(v => v.id === verbId);
+  const targetBin = BINS_DB.find(b => b.id === targetBinId);
+
+  openModal(`
+    <div style="font-size:1.4rem; font-weight:700; margin-bottom:12px;">♻️ 과거형 입력 및 검증</div>
+    <div style="background:var(--box-inner-bg); border:var(--wobbly-border); border-radius:var(--wobbly-radius-1); padding:12px; margin-bottom:16px; text-align:center;">
+      <div style="font-size:1.6rem; color:var(--text-color); font-weight:700;">${verb.base} (${verb.meaning})</div>
+      <div style="font-size:1.1rem; color:var(--sub-text); margin-top:4px;">선택한 박스: <b>${targetBin.name}</b></div>
+    </div>
+    <div class="input-group">
+      <label>이 동사의 과거형 철자를 입력하세요:</label>
+      <input type="text" id="past-input" placeholder="예: watched" autofocus>
+    </div>
+    <button class="btn" id="confirm-classify-btn">분리수거 제출</button>
+  `);
+
+  const submit = () => {
+    const typed = document.getElementById('past-input').value.trim().toLowerCase();
+    const isCorrectBin = verb.cat === targetBinId;
+    const isCorrectPast = verb.past.toLowerCase() === typed;
+
+    if (isCorrectBin && isCorrectPast) {
+      showToast(`🎉 정답! ${verb.base} → ${verb.past}`);
+      state.placedMap[verbId] = { binId: targetBinId, typedPast: verb.past };
+      state.selectedVerbId = null;
+      closeModal();
+      saveToLocalStorage();
+      render();
+    } else {
+      state.hearts--;
+      saveToLocalStorage();
+      if (state.hearts <= 0) {
+        openModal(`
+          <div style="font-size:1.5rem; color:#ff5252; font-weight:700; margin-bottom:10px;">💥 GAME OVER</div>
+          <div style="font-size:1.1rem; margin-bottom:14px;">
+            실수로 인해 목숨(HP)을 모두 소진하였습니다!<br>분리수거 단계를 처음부터 다시 도전해야 합니다.
+          </div>
+          <button class="btn btn-retry" id="modal-retry-btn">🔄 단계 처음부터 재도전하기</button>
+        `);
+        document.getElementById('modal-retry-btn').addEventListener('click', resetCurrentStage);
+      } else {
+        showToast(`❌ 오답! HP가 1 차감되었습니다. (남은 HP: ${state.hearts})`);
+        closeModal();
+        render();
+      }
+    }
+  };
+
+  document.getElementById('confirm-classify-btn').addEventListener('click', submit);
+  document.getElementById('past-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') submit(); });
+}
+
+/* 3. 복습 퀴즈 */
+function renderQuiz(container) {
+  const q = QUIZ_DB[state.quizIndex];
+  let sentenceHtml = q.sentence.replace(`[${q.target}]`, `<span style="background:var(--marker-yellow); font-weight:700; padding:2px 6px; border-radius:6px;">(${q.target})</span>`);
+
+  container.innerHTML = `
+    <div class="card">
+      <div class="card-title">📝 복습 퀴즈 (${state.quizIndex + 1}/${QUIZ_DB.length})</div>
+      <div style="font-size:1.1rem; color:#ff5252; font-weight:700; margin-bottom:12px;">
+        ⚠️ 1문제라도 틀리면 복습 퀴즈를 처음부터 다시 시작합니다!
+      </div>
+      <div style="font-size:1.4rem; line-height:1.4; background:var(--box-inner-bg); border:var(--wobbly-border); border-radius:var(--wobbly-radius-1); padding:16px; margin-bottom:16px; font-weight:700;">
+        ${sentenceHtml}
+      </div>
+      <div class="options-grid">
+        ${q.options.map(opt => `<button class="option-btn" data-opt="${opt}">${opt}</button>`).join('')}
+      </div>
+    </div>
+  `;
+
+  container.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const selected = btn.dataset.opt;
+      const isCorrect = selected === q.answer;
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+        state.quizAnswers.push({ isCorrect: true });
+        saveToLocalStorage();
+        showToast('⭕ 정답입니다!');
+        setTimeout(() => {
+          if (state.quizIndex < QUIZ_DB.length - 1) {
+            state.quizIndex++;
+            saveToLocalStorage();
+            render();
+          } else {
+            showToast('🎉 복습 퀴즈 22문항 완파! AI 보스전으로 이동합니다.');
+            initBossBattle();
+            state.currentStage = 'boss';
+            saveToLocalStorage();
+            render();
+          }
+        }, 700);
+      } else {
+        btn.classList.add('wrong');
+        showToast('❌ 오답 발생! 퀴즈 단계를 처음부터 다시 시작합니다.');
+        setTimeout(() => {
+          resetCurrentStage();
+        }, 1200);
+      }
+    });
+  });
+}
+
+/* 4. AI 타자 대결 */
+function initBossBattle() {
+  state.bossVerbs = [...VERBS_DB].sort(() => Math.random() - 0.5).slice(0, 10);
+  state.bossPlayerIndex = 0;
+  state.bossAiProgress = 0;
+  state.bossWinner = null;
+  if (state.bossTimer) clearInterval(state.bossTimer);
+
+  const intervalMs = 200;
+  const increment = (state.bossCpm / 50) * 0.45;
+
+  state.bossTimer = setInterval(() => {
+    if (state.currentStage !== 'boss' || state.bossWinner) return;
+
+    state.bossAiProgress += increment;
+    if (state.bossAiProgress >= 100) {
+      state.bossAiProgress = 100;
+      state.bossWinner = 'AI';
+      clearInterval(state.bossTimer);
+      saveToLocalStorage();
+      showToast('👾 AI가 타자 대결에서 승리했습니다!');
+      render();
+    } else {
+      updateBossProgressUI();
+    }
+  }, intervalMs);
+}
+
+function updateBossProgressUI() {
+  const aiFill = document.getElementById('ai-fill');
+  if (aiFill) aiFill.style.width = `${Math.min(100, state.bossAiProgress)}%`;
+}
+
+function renderBoss(container) {
+  const currentVerb = state.bossVerbs[state.bossPlayerIndex];
+  const isFinished = state.bossWinner !== null;
+
+  container.innerHTML = `
+    <div class="boss-screen">
+      <div class="boss-avatar-box">👾</div>
+      <div style="font-size:1.5rem; font-weight:700;">
+        FINAL BOSS: AI 타자 대결 (${state.bossCpm} CPM / 10단어 레이스)
+      </div>
+
+      <div class="race-track">
+        <div style="font-size:1.1rem; color:#ff5252; font-weight:700;">🤖 AI 진행도</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="ai-fill" style="width: ${state.bossAiProgress}%;"></div>
+        </div>
+
+        <div style="font-size:1.1rem; color:var(--text-color); margin-top:12px; font-weight:700;">🧍 플레이어 진행도 (${state.bossPlayerIndex}/10)</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" style="background: var(--marker-yellow); width: ${(state.bossPlayerIndex / 10) * 100}%;"></div>
+        </div>
+      </div>
+
+      ${!isFinished ? `
+        <div style="background:var(--box-inner-bg); border:var(--wobbly-border); border-radius:var(--wobbly-radius-1); padding:16px; margin:16px 0;">
+          <div style="font-size:1.1rem; color:var(--sub-text);">제시어 (${state.bossPlayerIndex + 1}/10 - 과거형을 빠르게 입력):</div>
+          <div style="font-size:2rem; font-weight:700;">${currentVerb.base} (${currentVerb.meaning})</div>
+        </div>
+
+        <div class="input-group">
+          <input type="text" id="boss-type-input" placeholder="과거형 철자 입력 후 Enter!" autofocus>
+        </div>
+      ` : `
+        <div style="font-size:1.6rem; font-weight:700; margin:16px 0;">
+          ${state.bossWinner === 'PLAYER' ? '🏆 VICTORY! 10개 단어를 AI보다 빠르게 완성했습니다!' : '💀 DEFEAT! AI에게 패배했습니다!'}
+        </div>
+        ${state.bossWinner === 'PLAYER' ? `
+          <button class="btn" id="boss-finish-btn">수료증 확인하기 ➡️</button>
+        ` : `
+          <button class="btn btn-retry" id="boss-retry-btn">🔄 보스전 처음부터 재도전하기</button>
+        `}
+      `}
+    </div>
+  `;
+
+  if (!isFinished) {
+    const inputEl = document.getElementById('boss-type-input');
+    inputEl.focus();
+
+    const handleBossInput = () => {
+      const typed = inputEl.value.trim().toLowerCase();
+      if (typed === currentVerb.past.toLowerCase()) {
+        state.bossPlayerIndex++;
+        saveToLocalStorage();
+        showToast('⚡ PERFECT!');
+        if (state.bossPlayerIndex >= 10) {
+          state.bossWinner = 'PLAYER';
+          clearInterval(state.bossTimer);
+          saveToLocalStorage();
+          showToast('🎉 보스 대결 승리!');
+        }
+        render();
+      } else {
+        showToast('❌ 철자 오류! (재입력 필요)');
+        inputEl.value = '';
+      }
+    };
+
+    inputEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleBossInput();
+    });
+  } else {
+    if (state.bossWinner === 'PLAYER') {
+      document.getElementById('boss-finish-btn')?.addEventListener('click', () => {
+        state.endTime = new Date();
+        state.currentStage = 'result';
+        saveToLocalStorage();
+        render();
+      });
+    } else {
+      document.getElementById('boss-retry-btn')?.addEventListener('click', resetCurrentStage);
+    }
+  }
+}
+
+/* 5. 최종 결과 및 수료증 */
+function renderResult(container) {
+  const placedScore = Object.keys(state.placedMap).length * 4;
+  const quizCorrectCount = state.quizAnswers.filter(a => a.isCorrect).length;
+  const quizScore = quizCorrectCount * 10;
+  const totalScore = placedScore + quizScore;
+  const bossBonus = state.bossWinner === 'PLAYER' ? 20 : 0;
+  const finalScore = totalScore + bossBonus;
+
+  const timeDiffSec = state.endTime && state.startTime ? Math.floor((new Date(state.endTime) - new Date(state.startTime)) / 1000) : 0;
+  const min = Math.floor(timeDiffSec / 60);
+  const sec = timeDiffSec % 60;
+
+  const nameStr = state.players.join(' & ');
+  const todayStr = new Date().toLocaleDateString('ko-KR');
+
+  const stampIcons = state.version === 'S' ? '💮💮 (2개)' : '💮 (1개)';
+
+  container.innerHTML = `
+    <div class="certificate-card">
+      <div class="cert-title">🎀 명예 수료증 🎀</div>
+      <div class="cert-subtitle">PAST-TENSE GRAMMAR PROJECT</div>
+
+      <div class="cert-message">
+        "민경쌤은 널 믿었어! 수고했어!" 👏🎉
+      </div>
+
+      <div class="cert-name">수여인: ${nameStr}</div>
+
+      <div class="cert-stats">
+        • 난이도 레벨: <b>${state.version || 'A'} 레벨</b> (AI 속도: ${state.bossCpm}타)<br>
+        • 획득 완료 도장: <b>${stampIcons}</b><br>
+        • 최종 점수: ${finalScore}점<br>
+        • AI 타자 대결: ${state.bossWinner === 'PLAYER' ? '🏆 승리 (10단어 격파)' : '👾 AI 승리'}<br>
+        • 소요 시간: ${min}분 ${sec}초<br>
+        • 화면 이탈 감지: ${state.tabSwitches}회
+      </div>
+
+      <div style="font-size:1.05rem; color:var(--sub-text);">
+        발급일: ${todayStr} | 인증 코드: OK
+      </div>
+    </div>
+
+    <!-- 대형 안내사항 박스 -->
+    <div class="notice-box-large">
+      📢 이제 패들릿에 인증하고, 학습지를 완성하세요! 다했으면 도장받기~
+    </div>
+
+    <button class="btn" id="print-btn" style="margin-top:18px;">🖨️ 수료증 인쇄하기</button>
+    <button class="btn" id="restart-btn" style="background: var(--marker-blue); margin-top:12px;">🔄 처음으로 돌아가기</button>
+  `;
+
+  document.getElementById('print-btn').addEventListener('click', () => window.print());
+  document.getElementById('restart-btn').addEventListener('click', clearLocalStorage);
+}
+
+// 교사모드 탐색
+document.getElementById('stage-prev').addEventListener('click', () => {
+  const idx = STAGES.indexOf(state.currentStage);
+  if (idx > 0) {
+    state.currentStage = STAGES[idx - 1];
+    saveToLocalStorage();
+    render();
+  }
+});
+
+document.getElementById('stage-next').addEventListener('click', () => {
+  const idx = STAGES.indexOf(state.currentStage);
+  if (idx < STAGES.length - 1) {
+    if (STAGES[idx + 1] === 'boss') initBossBattle();
+    state.currentStage = STAGES[idx + 1];
+    saveToLocalStorage();
+    render();
+  }
+});
+
+document.getElementById('dock-hint').addEventListener('click', () => {
+  if (state.hintChances <= 0) {
+    showToast('❌ 남은 힌트 찬스가 없습니다!');
+    return;
+  }
+  if (!state.selectedVerbId) {
+    showToast('힌트를 확인할 동사 카드를 선택하세요!');
+    return;
+  }
+  const verb = VERBS_DB.find(v => v.id === state.selectedVerbId);
+  const targetBin = BINS_DB.find(b => b.id === verb.cat);
+  state.hintChances--;
+  saveToLocalStorage();
+  showToast(`💡 힌트: '${verb.base}'는 [${targetBin.name}] 이며 과거형은 '${verb.past}' 입니다.`);
+  render();
+});
+
+document.getElementById('dock-toc').addEventListener('click', () => {
+  const placedCount = Object.keys(state.placedMap).length;
+  openModal(`
+    <div style="font-size:1.3rem; font-weight:700; margin-bottom:12px;">📋 학습 진행 현황</div>
+    <div style="font-size:1.15rem; line-height:1.6;">
+      • 분리수거 완료: ${placedCount} / 25<br>
+      • 남은 HP: ${state.hearts}<br>
+      • 남은 힌트 찬스: ${state.hintChances}회
+    </div>
+    <button class="btn" onclick="closeModal()" style="margin-top:16px;">닫기</button>
+  `);
+});
+
+document.getElementById('dock-next').addEventListener('click', () => {
+  const placedCount = Object.keys(state.placedMap).length;
+  const isCompleted = placedCount === VERBS_DB.length && state.hearts > 0;
+
+  if (!state.teacherMode && !isCompleted) {
+    showToast(`⚠️ 동사 25개를 모두 올바르게 분리수거해야 이동할 수 있습니다! (${placedCount}/25)`);
+    return;
+  }
+
+  if (state.currentStage === 'sorting') {
+    state.currentStage = 'quiz';
+    saveToLocalStorage();
+    render();
+  }
+});
+
+document.getElementById('teacher-btn').addEventListener('click', () => {
+  if (state.teacherMode) {
+    state.teacherMode = false;
+    showToast('🔒 교사모드 비활성화');
+    render();
+  } else {
+    openModal(`
+      <div style="font-size:1.3rem; font-weight:700; margin-bottom:12px;">🔒 교사 인증</div>
+      <div class="input-group">
+        <label>교사 전용 비밀번호를 입력하세요:</label>
+        <input type="password" id="pw-input" placeholder="비밀번호 입력">
+      </div>
+      <button class="btn" id="pw-submit-btn">인증하기</button>
+    `);
+
+    document.getElementById('pw-submit-btn').addEventListener('click', () => {
+      if (document.getElementById('pw-input').value === '0111') {
+        state.teacherMode = true;
+        showToast('🔓 교사모드 활성화');
+        closeModal();
+        render();
+      } else {
+        showToast('비밀번호가 올바르지 않습니다.');
+      }
+    });
+  }
+});
+
+function resetAll() {
+  if (state.bossTimer) clearInterval(state.bossTimer);
+  state.mode = null;
+  state.version = null;
+  state.players = [];
+  state.currentStage = 'cover';
+  state.teacherMode = false;
+  state.hintChances = 6;
+  state.stampsCount = 1;
+  state.tabSwitches = 0;
+  state.startTime = null;
+  state.endTime = null;
+  state.hearts = 10;
+  state.selectedVerbId = null;
+  state.shuffledVerbs = [];
+  state.placedMap = {};
+  state.quizAnswers = [];
+  state.quizIndex = 0;
+  state.bossWinner = null;
+  saveToLocalStorage();
+  render();
+}
+
+// 초기화 시 로컬 스토리지 데이터 복원
+loadFromLocalStorage();
+render();
+</script>
+</body>
+</html>
